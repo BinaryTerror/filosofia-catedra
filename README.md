@@ -2,6 +2,10 @@
 
 Next.js + Payload CMS + PostgreSQL/Supabase + Supabase Storage + Render.
 
+## Aplicação estática com Supabase
+
+A aplicação estática nova fica em `static-site/` e mantém a aplicação Payload desta raiz intacta. Consulte [`static-site/LEIA_PRIMEIRO.md`](./static-site/LEIA_PRIMEIRO.md) para configurar o Supabase e publicar a aplicação estática no Render.
+
 ## Estado
 Implementados: feed, pesquisa, categorias, paginação, notícias completas, galerias, partilha manual no Facebook, Open Graph e apresentação. CMS com editor, rascunhos, autosave, histórico e administradores autenticados. A identidade visual e os artigos de demonstração são propostas, não conteúdos oficiais. Supabase e Render ainda não estão ligados a contas reais.
 
