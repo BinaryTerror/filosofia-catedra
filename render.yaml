@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: catedra-filosofia-africana
+    runtime: node
+    plan: starter
+    buildCommand: npm ci && npm run build
+    preDeployCommand: npm run db:migrate
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: 22.22.0
+      - key: DEMO_MODE
+        value: "false"
+      - key: NEXT_PUBLIC_SITE_URL
+        sync: false
+      - key: PAYLOAD_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_BUCKET
+        value: catedra-media
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: MEDIA_PUBLIC_URL
+        sync: false
