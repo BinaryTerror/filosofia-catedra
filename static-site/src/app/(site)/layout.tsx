@@ -1,6 +1,0 @@
-import type {Metadata} from 'next'
-import Link from 'next/link'
-import {site,siteURL} from '@/lib/site'
-import './style.css'
-export const metadata:Metadata={metadataBase:new URL(siteURL),title:{default:site.name,template:'%s | '+site.name},description:site.description,robots:site.demo?{index:false,follow:false}:undefined}
-export default function Layout({children}:{children:React.ReactNode}){return <html lang="pt-MZ"><body><a className="skip" href="#conteudo">Saltar para o conteúdo</a>{site.demo&&<div className="demo">Pré-visualização · Conteúdos ilustrativos, sujeitos a aprovação da Cátedra</div>}<header><Link href="/" className="brand"><span className="mark">cfa<span>✳</span></span><span>CÁTEDRA DE<br/>FILOSOFIA AFRICANA</span></Link><nav aria-label="Navegação principal"><Link href="/">Publicações</Link><Link href="/sobre/">A Cátedra</Link><a href="https://www.facebook.com/people/C%C3%A1tedra-de-Filosofia-Africana/61596000720059/" target="_blank" rel="noreferrer">Facebook ↗</a></nav></header><main id="conteudo">{children}</main><footer><div className="footer-brand">Pensar. Dialogar.<br/><em>Construir conhecimento.</em></div><div>{site.name}<br/><small>Um espaço dedicado ao pensamento africano.</small></div><div><Link href="/sobre/">Sobre o projecto</Link><Link href="/admin/">Área de gestão ↗</Link></div></footer></body></html>}

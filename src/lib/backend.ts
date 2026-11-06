@@ -24,9 +24,19 @@ export async function login(email:string,password:string){return save(await raw(
 export async function logout(){const s=read();try{if(s)await raw('/auth/v1/logout',{method:'POST'},s.access_token)}finally{sessionStorage.removeItem(storageKey)}}
 export async function api(path:string,init:RequestInit={}){const s=await session();if(!s)throw Error('A sessão terminou. Entre novamente.');return raw(path,init,s.access_token)}
 export async function isAdmin(){const s=await session();if(!s)return false;const rows=await api('/rest/v1/catedra_admins?select=user_id&user_id=eq.'+encodeURIComponent(s.user.id));return rows.length===1}
-export const publicPosts=()=>raw('/rest/v1/catedra_posts?select=id,slug,title,summary,category,cover_path,cover_alt,published,created_at,updated_at&published=eq.true&order=created_at.desc&limit=1000') as Promise<Post[]>
+// Fetch all pages even when the API caps the response size.
+async function allPosts(select:string, admin=false):Promise<Post[]> {
+ const posts:Post[]=[]
+ const request=admin?api:raw
+ while(true){
+  const rows:Post[]=await request('/rest/v1/catedra_posts?select='+select+(admin?'':'&published=eq.true')+'&order=created_at.desc,id.desc&limit=100&offset='+posts.length)
+  posts.push(...rows)
+  if(rows.length===0)return posts
+ }
+}
+export const publicPosts=()=>allPosts('id,slug,title,summary,category,cover_path,cover_alt,published,created_at,updated_at')
 export async function publicPost(slug:string){const rows=await raw('/rest/v1/catedra_posts?select=*&published=eq.true&slug=eq.'+encodeURIComponent(slug)+'&limit=1');return rows[0] as Post|undefined}
-export const adminPosts=()=>api('/rest/v1/catedra_posts?select=*&order=created_at.desc&limit=1000') as Promise<Post[]>
+export const adminPosts=()=>allPosts('*',true)
 export function photo(path:string){return url+'/storage/v1/object/public/catedra-site/'+path.split('/').map(encodeURIComponent).join('/')}
 export function articleURL(slug:string){return '/noticia/?slug='+encodeURIComponent(slug)}
 export async function upload(file:File){

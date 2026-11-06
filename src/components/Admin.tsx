@@ -1,6 +1,6 @@
 'use client'
 import {useEffect,useState,useRef} from 'react'
-import {login,logout,isAdmin,adminPosts,upload,removePhoto,savePost,deletePost,photo,articleURL,type Post} from '@/lib/backend'
+import {login,logout,isAdmin,adminPosts,upload,savePost,deletePost,photo,articleURL,type Post} from '@/lib/backend'
 import {categories} from '@/lib/site'
 const empty={title:'',summary:'',body:'',category:'noticias',cover_alt:''}
 export function Admin(){
@@ -12,11 +12,11 @@ export function Admin(){
  async function signIn(e:React.FormEvent){e.preventDefault();setBusy(true);setMessage('');try{await login(email,password);setPassword('');if(!await isAdmin()){await logout();throw Error('Esta conta ainda não tem permissão de administrador.')}setAuthorized(true);setPosts(await adminPosts())}catch(e){setMessage(e instanceof Error?e.message:'Não foi possível entrar.')}finally{setBusy(false)}}
  function edit(p?:Post){if(dirty&&!confirm('Descartar as alterações não guardadas?'))return;setOriginal(p);setForm(p?{title:p.title,summary:p.summary,body:p.body,category:p.category,cover_alt:p.cover_alt}:empty);setFile(undefined);if(picker.current)picker.current.value='';setDirty(false);setMessage('')}
  function change(key:keyof typeof empty,value:string){setForm(f=>({...f,[key]:value}));setDirty(true)}
- async function submit(e:React.FormEvent<HTMLFormElement>){e.preventDefault();const action=(e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement|null;const publish=action?.value==='publish';setBusy(true);setMessage('');let uploaded='';let committed=false
+ async function submit(e:React.FormEvent<HTMLFormElement>){e.preventDefault();const action=(e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement|null;const publish=action?.value==='draft'?false:action?.value==='publish'?true:Boolean(original?.published);setBusy(true);setMessage('');let uploaded=''
  try{if(!file&&!original?.cover_path)throw Error('Escolha uma fotografia.');if(!form.title.trim()||!form.body.trim()||!form.summary.trim()||!form.cover_alt.trim())throw Error('Preencha os campos obrigatórios.');if(file)uploaded=await upload(file)
  const slug=original?.slug||(form.title.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,90).replace(/-$/,'')||'publicacao')+'-'+crypto.randomUUID().slice(0,8)
- const saved=await savePost({...form,slug,cover_path:uploaded||original!.cover_path,published:publish},original);committed=true;setOriginal(saved);setDirty(false);setFile(undefined);if(picker.current)picker.current.value='';setMessage(publish?'Publicação guardada e disponível no site.':'Rascunho guardado. Não aparece no site público.');try{setPosts(await adminPosts())}catch{setMessage('Publicação guardada. Actualize o painel para recarregar a lista.')}
- }catch(e){if(uploaded&&!committed){try{await removePhoto(uploaded)}catch{}}setMessage(e instanceof Error?e.message:'Falha ao guardar. O texto permanece no formulário.')}finally{setBusy(false)}}
+ const saved=await savePost({...form,slug,cover_path:uploaded||original!.cover_path,published:publish},original);setOriginal(saved);setDirty(false);setFile(undefined);if(picker.current)picker.current.value='';setMessage(publish?'Publicação guardada e disponível no site.':'Rascunho guardado. Não aparece no site público.');try{setPosts(await adminPosts())}catch{setMessage('Publicação guardada. Actualize o painel para recarregar a lista.')}
+ }catch(e){setMessage(e instanceof Error?e.message:'Falha ao guardar. O texto permanece no formulário.')}finally{setBusy(false)}}
  async function erase(p:Post){if(!confirm('Apagar definitivamente “'+p.title+'”?'))return;setBusy(true);try{await deletePost(p);setPosts(await adminPosts());if(original?.id===p.id){setOriginal(undefined);setForm(empty);setFile(undefined);setDirty(false)}setMessage('Publicação apagada.')}catch(e){setMessage(e instanceof Error?e.message:'Falha ao apagar.')}finally{setBusy(false)}}
  async function signOut(){if(dirty&&!confirm('Sair sem guardar as alterações?'))return;setBusy(true);try{await logout()}catch{}finally{setAuthorized(false);setPosts([]);setOriginal(undefined);setForm(empty);setFile(undefined);setDirty(false);setBusy(false);setMessage('Sessão terminada.')}}
  if(!ready)return <section className="about">A verificar sessão…</section>
